@@ -26,6 +26,7 @@ import {
 } from "./model";
 import { readParameter } from "../../idfConfiguration";
 import { commands } from "vscode";
+import { StaticVarsTreeItem } from "../diagnostic/sync-static";
 
 const USER_TOKEN_CACHE_KEY = "esp.rainmaker.login.tokens";
 const USER_ASSOCIATED_NODES_CACHE_KEY = "esp.rainmaker.login.nodes";
@@ -158,6 +159,31 @@ export class RainmakerAPIClient {
       return resp.data;
     }
     this.throwUnknownError(resp);
+  }
+
+  public static async diagSyncStaticVar(args: StaticVarsTreeItem) {
+    const nodes = this.getNodesFromCache();
+    if (nodes.nodes && nodes.nodes.length > 0) {
+      let nodeID = nodes.nodes[0];
+      if (nodes.nodes.length > 1) {
+        // show quick select to ask user to choose an node to send data to
+      }
+      const payload = {
+        diag: {
+          req: `15:${args.staticVarsModel.address}:${args.staticVarsModel.size}:${args.staticVarsModel.filePath}`,
+        },
+      };
+      await this.refreshAccessToken();
+      const resp = await axios.put(
+        this.generateURLFor(`user/nodes/params?nodeid=${nodeID}`),
+        payload,
+        { headers: this.getAuthHeader() }
+      );
+      if (resp.status === 200 && resp.data.status === "success") {
+        return resp.data;
+      }
+      this.throwUnknownError(resp);
+    }
   }
 
   public static async updateNodeParam(

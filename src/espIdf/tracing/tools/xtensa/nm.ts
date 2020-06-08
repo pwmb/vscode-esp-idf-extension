@@ -30,6 +30,10 @@ export class Nm extends XtensaTools {
     this.elfFilePath = elfFilePath;
   }
 
+  public async runWith(...args: string[]) {
+    return await this.call(args);
+  }
+
   public async run() {
     if (!canAccessFile(this.elfFilePath, constants.R_OK)) {
       throw new Error("Elf file not present or not accessible");

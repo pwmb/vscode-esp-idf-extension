@@ -71,6 +71,7 @@
     "onView:idfAppTraceArchive",
     "onView:espRainmaker",
     "onView:idfComponents",
+    "onView:espRainmaker_diagnostic",
     "workspaceContains:**/project_description.json",
     "workspaceContains:**/sdkconfig",
     "workspaceContains:**/CMakeLists.txt"
@@ -99,6 +100,11 @@
         {
           "id": "espRainmaker",
           "name": "Rainmaker"
+        },
+        {
+          "id": "espRainmaker_diagnostic",
+          "name": "Rainmaker Diagnostic",
+          "when": "rainmaker_logged_in"
         }
       ],
       "explorer": [
@@ -150,6 +156,11 @@
           "command": "esp.rainmaker.backend.update_node_param",
           "when": "view == espRainmaker && viewItem == param",
           "group": "inline"
+        },
+        {
+          "command": "esp.rainmaker.diagnostic.static_var_sync",
+          "group": "inline",
+          "when": "view == espRainmaker_diagnostic && viewItem == variables"
         }
       ],
       "explorer/context": [
@@ -525,6 +536,15 @@
         "icon": {
           "dark": "media/dark/edit.svg",
           "light": "media/light/edit.svg"
+        }
+      },
+      {
+        "command": "esp.rainmaker.diagnostic.static_var_sync",
+        "title": "Sync Static Variable",
+        "category": "ESP:Rainmaker:Diagnostic",
+        "icon": {
+          "dark": "media/dark/refresh.svg",
+          "light": "media/light/refresh.svg"
         }
       }
     ],

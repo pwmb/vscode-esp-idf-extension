@@ -66,6 +66,10 @@ import { RMakerItem } from "./rainmaker/view/item";
 import { RainmakerStore } from "./rainmaker/store";
 import { RainmakerDeviceParamStructure } from "./rainmaker/client/model";
 import { RainmakerOAuthManager } from "./rainmaker/oauth";
+import {
+  ESPRainmakerStaticVarSyncTreeDataItem,
+  StaticVarsTreeItem,
+} from "./rainmaker/diagnostic/sync-static";
 
 // Global variables shared by commands
 let workspaceRoot: vscode.Uri;
@@ -86,6 +90,9 @@ let heapTraceManager: HeapTraceManager;
 
 // ESP Rainmaker
 let rainMakerTreeDataProvider: ESPRainMakerTreeDataProvider;
+
+// ESP Rainmaker Static Var sync
+let rainMakerStaticVarSyncTreeDataProvider: ESPRainmakerStaticVarSyncTreeDataItem;
 
 // Kconfig Language Client
 let kconfigLangClient: LanguageClient;
@@ -1035,6 +1042,23 @@ export async function activate(context: vscode.ExtensionContext) {
       );
     }
   );
+  registerIDFCommand(
+    "esp.rainmaker.diagnostic.static_var_sync",
+    async (args: StaticVarsTreeItem) => {
+      if (!args) {
+        Logger.warnNotify("Can't be called directly");
+        return;
+      }
+      try {
+        await RainmakerAPIClient.diagSyncStaticVar(args);
+      } catch (error) {
+        Logger.errorNotify(
+          "Failed to sync static variable with the Rainmaker Cloud",
+          error
+        );
+      }
+    }
+  );
   vscode.window.registerUriHandler({
     handleUri: async (uri: vscode.Uri) => {
       const query = uri.query.split("=");
@@ -1091,11 +1115,17 @@ function registerOpenOCDStatusBarItem(context: vscode.ExtensionContext) {
 function registerTreeProvidersForIDFExplorer(context: vscode.ExtensionContext) {
   appTraceTreeDataProvider = new AppTraceTreeDataProvider();
   appTraceArchiveTreeDataProvider = new AppTraceArchiveTreeDataProvider();
+  rainMakerStaticVarSyncTreeDataProvider = new ESPRainmakerStaticVarSyncTreeDataItem();
 
   rainMakerTreeDataProvider = new ESPRainMakerTreeDataProvider();
   vscode.window.registerTreeDataProvider(
     "espRainmaker",
     rainMakerTreeDataProvider
+  );
+  context.subscriptions.push(
+    rainMakerStaticVarSyncTreeDataProvider.treeDataProvider(
+      "espRainmaker_diagnostic"
+    )
   );
 
   context.subscriptions.push(
